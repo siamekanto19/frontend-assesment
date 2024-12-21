@@ -1,5 +1,4 @@
 import { BackToHome } from "@/components/backToHome/backToHome";
-import { UserAgent } from "@/views/userAgent";
 import { headers } from "next/headers";
 
 const getUserAgent = async () => {
