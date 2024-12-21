@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { Product } from "@/types";
-import { ProductModal } from "@/views/products/productModal/productModal";
 import { BackToHome } from "@/components/backToHome/backToHome";
-import { ProductList } from "@/views/products/productList/productList";
-import { PaginationControls } from "@/views/products/paginationControls/paginationControls";
-import { usePagination } from "@/hooks/usePagination";
 import { PRODUCTS_DATA } from "@/data/productsData";
+import { usePagination } from "@/hooks/usePagination";
+import { Product } from "@/types";
+import { PaginationControls } from "@/views/products/paginationControls/paginationControls";
+import { ProductList } from "@/views/products/productList/productList";
+import { ProductModal } from "@/views/products/productModal/productModal";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useMemo } from "react";
 
 export const Products: React.FC = () => {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const router = useRouter();
+  const path = usePathname();
+  const params = useSearchParams();
+  const selectedProductId = params.get("productId");
+
   const {
     currentPage,
     totalPages,
@@ -18,12 +23,18 @@ export const Products: React.FC = () => {
     handlePageChange,
   } = usePagination({ items: PRODUCTS_DATA, itemsPerPage: 5 });
 
+  const productFromSearchParams = useMemo(() => {
+    const product = paginatedProducts.find((p) => p.id === selectedProductId);
+    if (!product) return null;
+    return product;
+  }, [selectedProductId]);
+
   const handleOpenModal = useCallback((product: Product) => {
-    setSelectedProduct(product);
+    router.push(path + `?productId=${product.id}`);
   }, []);
 
   const handleCloseModal = useCallback(() => {
-    setSelectedProduct(null);
+    router.push("/products");
   }, []);
 
   return (
@@ -36,8 +47,11 @@ export const Products: React.FC = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-      {selectedProduct && (
-        <ProductModal product={selectedProduct} onClose={handleCloseModal} />
+      {selectedProductId && productFromSearchParams && (
+        <ProductModal
+          product={productFromSearchParams}
+          onClose={handleCloseModal}
+        />
       )}
     </div>
   );
